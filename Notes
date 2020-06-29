@@ -1,0 +1,48 @@
+Time to expiration, strike price, implied volatility, volume (parameters)
+
+Classify stocks manually using tags
+
+Volume filter for near the money options
+
+
+Data Tasks
+
+a. Weekly options list from CBOE
+
+b. Options bid ask spread manually for new instruments
+
+c. EOD data from Tradier
+
+d. Corporate Actions
+
+2. Options REST API:
+
+a. GET for options strikes once a week
+
+b. Save strikes …?
+
+c. GET options data when equity price reaches entry target
+
+d. Note: even strikes have higher volume.
+
+
+EOD Data computations
+
+a. Historical Volatility:
+
+b. https://www.macroption.com/historical-volatility-calculation/
+
+c. nATR
+
+d. nATR%
+
+e. Intraday Range% = (H - L)/ Prev. Close
+
+
+Finding stocks with liquid options:
+
+a. For the entire list with weekly options
+
+b. Check near the money strikes throughout the day and check abs [bid - ask] for closest three strikes
+
+c. If stock volume is at a relative low and strikes are still close
