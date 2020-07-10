@@ -46,3 +46,9 @@ a. For the entire list with weekly options
 b. Check near the money strikes throughout the day and check abs [bid - ask] for closest three strikes
 
 c. If stock volume is at a relative low and strikes are still close
+
+
+# find most liquid options
+# subtract bid from ask and find least one, record every day
+
+# ta lib python library
