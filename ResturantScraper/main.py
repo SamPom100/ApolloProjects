@@ -99,6 +99,10 @@ class InfiniteScraper():
             budget = self.search_and_return(
                 source, '<div class="col-3 g-font-size-20 dg-font-blue text-right g-line-height-1 g-font-weight-600 rest-price">', '</div>')
             print("budget: "+budget)
+            ####### phone number #######
+            phoneNum = self.search_and_return(source,
+                                              '<button class="btn btn-block btn-dg-white-outline-gray-soft g-font-size-16 btn-ver-telefono" data-main-phone="', '" data')
+            print("phone: "+phoneNum)
 
     def main_loop(self):
         list = self.get_names()
