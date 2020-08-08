@@ -1,4 +1,8 @@
 import requests
+import json
+import jsonpickle
+from json import JSONEncoder
+from tqdm import tqdm
 
 
 class InfiniteScraper():
@@ -46,38 +50,52 @@ class InfiniteScraper():
         return text[begin_num:end_num]
 
     def get_details(self, list):
-        for x in list:
+        data = {}
+        list = list[:5]
+        for x in tqdm(list):
             URL = 'https://www.degustavenezuela.com/caracas/restaurante/'
             combinedURL = URL+x
             response = requests.get(combinedURL)
             source = response.text
+
             ####### name #######
             name = self.search_and_return(
                 source, 'data-restaurant-name="', 'data-plan-letter')
-            print('\n'+"name: "+name[:-2])
+            # print('\n'+"name: "+name[:-2])
+            name = name[:-2]
+            data[name] = []
+
             ####### cuisine #######
             beginCuis = source.index('3D">', source.index('servesCuisine'))
             endCuis = source.index('</a>', beginCuis)
             cuisine = source[beginCuis+4:endCuis]
             if cuisine == '<i class="dg-font">&#xf0f5;</i>Salir a comer':
                 cuisine = 'Salir a comer'
-            print("cuisine: "+cuisine)
+            data[name].append({"cuisine": str(cuisine)})
+
             ####### ratings #######
             rating = self.search_and_return(source, 'Comida: ', ',')
-            print("rating: "+rating)
+            data[name].append({"rating": str(rating)})
+
             ####### number of reviews #######
             reviews = self.search_and_return(
                 source, 'Leer todos los comentarios (', ')')
-            print("reviews: "+reviews)
+            data[name].append({"reviews": str(reviews)})
+
             ####### google coordinates #######
             beginMap = source.index('href="https://www.google.com/maps/')
             endMap = source.index('">', beginMap)
             mapLink = source[beginMap+6:endMap]
-            print("map: "+mapLink)
+            data[name].append({"map": str(mapLink)})
+
             ####### schedule #######
             schedule = self.search_and_return(
                 source, 'style="display: block;">', '</span>')
-            print("schedule: "+schedule)
+            schedule = schedule.replace("Hoy", "")
+            a, b = schedule.split(" a", 1)
+            data[name].append({"openHour": str(a)})
+            data[name].append({"closeHour": str(b)})
+
             ####### payment methods #######
             payment = self.search_and_return(
                 source, '<li><i class="dg-sprite dg-', '-small')
@@ -85,29 +103,61 @@ class InfiniteScraper():
                 source2 = source[source.index(payment)+6:]
                 payment2 = self.search_and_return(
                     source2, 'dg-sprite dg-', '-small')
-                print("payments: "+payment+" & "+payment2)
+                data[name].append({"payments": str(payment+" & "+payment2)})
             except:
-                print("payment: "+payment)
+                data[name].append({"payment": str(payment)})
+
             ####### best dishes #######
+            tempSource = (source + '.')[:-1]
             try:
-                bestDish = self.search_and_return(
-                    source, '<div class="dish-name dg-font-gray-soft g-font-size-16 dg-text-ellipsis">', '</div>')
-                print("best dish: "+bestDish)
+                bestDish1 = self.search_and_return(
+                    tempSource, '<div class="dish-name dg-font-gray-soft g-font-size-16 dg-text-ellipsis">', '</div>')
+
+                begin1 = tempSource.index(bestDish1) + len(bestDish1)
+                tempSource = tempSource[begin1:]
+
+                bestDish2 = self.search_and_return(
+                    tempSource, '<div class="dish-name dg-font-gray-soft g-font-size-16 dg-text-ellipsis">', '</div>')
+
+                begin2 = tempSource.index(bestDish2) + len(bestDish2)
+                tempSource = tempSource[begin2:]
+
+                bestDish3 = self.search_and_return(
+                    tempSource, '<div class="dish-name dg-font-gray-soft g-font-size-16 dg-text-ellipsis">', '</div>')
+
+                begin3 = tempSource.index(bestDish3) + len(bestDish3)
+                tempSource = tempSource[begin3:]
+
+                data[name].append(
+                    {"best dish": str(bestDish1)+", "+str(bestDish2)+", "+str(bestDish3)})
             except:
-                print("best dish: none")
+                data[name].append({"best dish": "none"})
+
             ####### budget #######
             budget = self.search_and_return(
                 source, '<div class="col-3 g-font-size-20 dg-font-blue text-right g-line-height-1 g-font-weight-600 rest-price">', '</div>')
-            print("budget: "+budget)
+            try:
+                budget = budget.replace('.', "")
+                budget = int(budget) * 0.0000037
+            except:
+                pass
+            data[name].append({"budget in USD": str(budget)})
+
             ####### phone number #######
             phoneNum = self.search_and_return(source,
                                               '<button class="btn btn-block btn-dg-white-outline-gray-soft g-font-size-16 btn-ver-telefono" data-main-phone="', '" data')
-            print("phone: "+phoneNum)
+            data[name].append({"phone": str(phoneNum)})
+        return data
+
+    def json_export(self, data):
+        with open('data.json', 'w') as outfile:
+            json.dump(data, outfile)
 
     def main_loop(self):
         list = self.get_names()
         details = self.get_details(list)
+        self.json_export(details)
 
 
 # Get all resturant names returned as a list
-print(InfiniteScraper().main_loop())
+InfiniteScraper().main_loop()
