@@ -3,6 +3,7 @@ import json
 import jsonpickle
 from json import JSONEncoder
 from tqdm import tqdm
+import pandas as pd
 
 
 class InfiniteScraper():
@@ -28,9 +29,9 @@ class InfiniteScraper():
         begin = sampleText.index(begin_key) + 7
         return sampleText[begin:]
 
-    def get_names(self):
+    def get_names(self, rng):
         list = []
-        for x in range(0, 100, 10):
+        for x in tqdm(range(0, rng, 10)):
             sampleText = self.scrape(x)
             resturantNum = sampleText.count(
                 'g-color-black g-color-primary--hover g-font-weight-600 g-text-underline--none--hover')
@@ -51,7 +52,6 @@ class InfiniteScraper():
 
     def get_details(self, list):
         data = {}
-        list = list[:5]
         for x in tqdm(list):
             URL = 'https://www.degustavenezuela.com/caracas/restaurante/'
             combinedURL = URL+x
@@ -153,10 +153,15 @@ class InfiniteScraper():
         with open('data.json', 'w') as outfile:
             json.dump(data, outfile)
 
+    def csv_converter(self):
+        df = pd.read_json('data.json')
+        df.to_csv(r'data.csv', index=False, header=True)
+
     def main_loop(self):
-        list = self.get_names()
+        list = self.get_names(500)
         details = self.get_details(list)
         self.json_export(details)
+        # self.csv_converter()
 
 
 # Get all resturant names returned as a list
