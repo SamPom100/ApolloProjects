@@ -200,7 +200,7 @@ class InfiniteScraper():
         df.to_csv(r'data.csv', index=False, header=True)
 
     def main_loop(self):
-        list = self.get_names(500)
+        list = self.get_names(1700)
         details = self.get_details(list)
 
 
