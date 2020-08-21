@@ -7,8 +7,7 @@ import pandas as pd
 
 
 class InfiniteScraper():
-    def scrape(self, num):
-        URL = 'https://www.degustavenezuela.com/caracas/services/search?filters=eyJmaWx0ZXJzIjp7fSwic2NvcmVfcmFuZ2UiOnt9LCJzb3J0IjoiZm9vZCJ9&offset='
+    def scrape(self, num, URL):
         combinedURL = URL+str(num)
         response = requests.get(combinedURL)
         source = response.text
@@ -29,10 +28,10 @@ class InfiniteScraper():
         begin = sampleText.index(begin_key) + 7
         return sampleText[begin:]
 
-    def get_names(self, rng):
+    def get_names(self, rng, URL):
         list = []
         for x in tqdm(range(0, rng, 10)):
-            sampleText = self.scrape(x)
+            sampleText = self.scrape(x, URL)
             resturantNum = sampleText.count(
                 'g-color-black g-color-primary--hover g-font-weight-600 g-text-underline--none--hover')
             for y in range(0, resturantNum, 1):
@@ -50,7 +49,7 @@ class InfiniteScraper():
         end_num = text.index(end, begin_num)
         return text[begin_num:end_num]
 
-    def get_details(self, list):
+    def get_details(self, list, filename):
         nameList = []
         cuisineList = []
         ratingList = []
@@ -197,11 +196,21 @@ class InfiniteScraper():
              'Budget in USD': budgetList,
              'Phone Number': phoneList
              })
-        df.to_csv(r'data.csv', index=False, header=True)
+        df.to_csv(filename+'.csv', index=False, header=True)
 
     def main_loop(self):
-        list = self.get_names(1700)
-        details = self.get_details(list)
+        URL = 'https://www.degustavenezuela.com/caracas/services/search?filters=eyJmaWx0ZXJzIjp7fSwic2NvcmVfcmFuZ2UiOnt9LCJzb3J0IjoiZm9vZCJ9&offset='
+        # 660
+        URL2 = 'https://www.degustavenezuela.com/caracas/services/search?filters=eyJmaWx0ZXJzIjp7fSwic2NvcmVfcmFuZ2UiOnt9LCJuZWlnaGJvcmhvb2QiOlsiQWx0YSBGbG9yaWRhIiwiQWx0YW1pcmEiLCJBbHRvIEhhdGlsbG8iLCJBbHRvIFByYWRvIiwiQXYuIFZpY3RvcmlhIiwiQXZlbmlkYSBCYXJhbHQiLCJBdmlsYSBN4WdpY2EiLCJCYXJ1dGEiLCJCZWxsYXMgQXJ0ZXMiLCJCZWxsbyBDYW1wbyIsIkJlbGxvIE1vbnRlIiwiQm9sZWl0YSIsIkJvbGVpdGEgTm9ydGUiLCJCb2xl7XRhIFN1ciIsIkNhbXBvIEFsZWdyZSIsIkNhcGl0b2xpbyIsIkNhdGlhIiwiQ2F1cmltYXJlIiwiQ2Vycm8gVmVyZGUiLCJDaGFjYW8iLCJDaGFjYe10byIsIkNodWFvIiwiQ29saW5hIGRlIGxvcyBDYW9ib3MiLCJDb2xpbmFzIGRlIEJlbGxvIE1vbnRlIiwiQ29saW5hcyBkZSBTYW50YSBNb25pY2EiLCJDb2xpbmFzIGRlIFZhbGxlIEFycmliYSIsIkNvbGluYXMgZGUgbGEgVHJpbmlkYWQiLCJFbCBCb3NxdWUiLCJFbCBDYWZldGFsIiwiRWwgSGF0aWxsbyIsIkVsIEp1bnF1aXRvIiwiRWwgTWFycXXpcyIsIkVsIFBhcmFpc28iLCJFbCBQbGFjZXIiLCJFbCBSZWNyZW8iLCJFbCBSb3NhbCJdLCJzb3J0IjoiZm9vZCJ9&offset='
+        # 600
+        URL3 = 'https://www.degustavenezuela.com/caracas/services/search?filters=eyJmaWx0ZXJzIjp7fSwic2NvcmVfcmFuZ2UiOnt9LCJuZWlnaGJvcmhvb2QiOlsiR2FsaXDhbiIsIkd1YXJlbmFzIiwiR3VhdGlyZSIsIkhvcml6b250ZSIsIkxhIEJveWVyYSIsIkxhIENhbGlmb3JuaWEgTm9ydGUiLCJMYSBDYW1wafFhIiwiTGEgQ2FuZGVsYXJpYSIsIkxhIENhcmxvdGEiLCJMYSBDYXN0ZWxsYW5hIiwiTGEgRmxvcmVzdGEiLCJMYSBGbG9yaWRhIiwiTGEgTGFndW5pdGEiLCJMYSBQYXoiLCJMYSBUYWhvbmEiLCJMYSBUcmluaWRhZCIsIkxhIFVuaW9uIiwiTGEgVXJiaW5hIiwiTGFzIEFjYWNpYXMiLCJMYXMgTWVyY2VkZXMiLCJMYXMgUGFsbWFzIiwiTG9tYXMgZGUgU2FuIFJvbWFuIiwiTG9tYXMgZGUgbGEgTGFndW5pdGEiLCJMb21hcyBkZSBsYSBUcmluaWRhZCIsIkxvcyBDYW9ib3MiLCJMb3MgQ2hhZ3VhcmFtb3MiLCJMb3MgQ2hvcnJvcyIsIkxvcyBDb3J0aWpvcyBkZSBMb3VyZGVzIiwiTG9zIERvcyBDYW1pbm9zIiwiTG9zIE5hcmFuam9zIGRlbCBDYWZldGFsIiwiTG9zIE5hcmFuam9zIGRlIGxhcyBNZXJjZWRlcyIsIkxvcyBQYWxvcyBHcmFuZGVzIiwiTG9zIFJ1aWNlcyIsIkxvcyBTYW1hbmVzIiwiTG9zIFRlcXVlcyJdLCJzb3J0IjoiZm9vZCJ9&offset='
+        # 470
+        URL4 = 'https://www.degustavenezuela.com/caracas/services/search?filters=eyJmaWx0ZXJzIjp7fSwic2NvcmVfcmFuZ2UiOnt9LCJuZWlnaGJvcmhvb2QiOlsiTWFjYXJhY3VheSIsIk1haXF1ZXRpYSIsIk1hbnphbmFyZXMiLCJNYXJpcGVyZXoiLCJNb250YWxiYW4iLCJNb250ZWNyaXN0byIsIlBhcnF1ZSBDYXJhYm9ibyIsIlBhcnF1ZSBDZW50cmFsIiwiUGxhemEgVmVuZXp1ZWxhIiwiUHJhZG9zIGRlbCBFc3RlIiwiU2FiYW5hIEdyYW5kZSIsIlNhbiBBbnRvbmlvIiwiU2FuIEJlcm5hcmRpbm8iLCJTYW4gSm9z6SBkZSBsb3MgQWx0b3MiLCJTYW4gTHVpcyIsIlNhbiBNYXJ07W4iLCJTYW50YSBFZHV2aWdpcyIsIlNhbnRhIEZlIiwiU2FudGEgSW7pcyIsIlNhbnRhIE3zbmljYSIsIlNhbnRhIFBhdWxhIiwiU2FudGEgUm9zYSBkZSBMaW1hIiwiU2FudGEgUm9zYWxpYSIsIlNhbnRhIFNvZu1hIiwiU2VidWNhbiIsIlRlcnJhemFzIGRlbCBBdmlsYSIsIlZhbGxlIEFycmliYSIsIlZhcmdhcyIsIlZpc3RhIEFsZWdyZSIsIlZpemNheWEiXSwic29ydCI6ImZvb2QifQ==&offset='
+        URLlist = [URL2, URL3, URL4]
+        LengthList = [10, 20, 30]
+        for x in range(len(URLlist)):
+            list = self.get_names(LengthList[x], URLlist[x])
+            details = self.get_details(list, str(LengthList[x]))
 
 
 # Get all resturant names returned as a list
